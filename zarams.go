@@ -29,7 +29,7 @@ func param() string {
 
 	for _, par := range parames {
 		if len(par) < 40 {
-			parSub := par + "=1%22%3e%3cz0%3e" + "x" + fmt.Sprint(num) + "x"
+			parSub := par + "=1%22%3e%3cz%3e" + fmt.Sprint(num) + "x"
 			num = (num % count) + 1
 			paramList = append(paramList, parSub+"&")
 		}
@@ -37,7 +37,7 @@ func param() string {
 
 	for _, par := range parames {
 		if len(par) < 40 {
-			parSub := par + "=1%22z0" + "x" + fmt.Sprint(num) + "x"
+			parSub := par + "=1%22z" + fmt.Sprint(num) + "x"
 			num = (num % count) + 1
 			paramList = append(paramList, parSub+"&")
 		}
@@ -45,7 +45,7 @@ func param() string {
 
 	for _, par := range parames {
 		if len(par) < 40 {
-			parSub := par + "=1%27z1" + "x" + fmt.Sprint(num) + "x"
+			parSub := par + "=1%27z" + fmt.Sprint(num) + "x"
 			num = (num % count) + 1
 			paramList = append(paramList, parSub+"&")
 		}
@@ -53,7 +53,7 @@ func param() string {
 
 	for _, par := range parames {
 		if len(par) < 40 {
-			parSub := par + "=1%3cz2" + "x" + fmt.Sprint(num) + "x"
+			parSub := par + "=1%3cz" + fmt.Sprint(num) + "x"
 			num = (num % count) + 1
 			paramList = append(paramList, parSub+"&")
 		}
