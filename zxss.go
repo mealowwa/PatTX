@@ -66,64 +66,75 @@ func main() {
 	<-done
 }
 
+
+
 func checkReflected(targetURL string) ([]string, error) {
-	//fmt.Println(targetURL)
-
 	out := make([]string, 0)
+	maxRetries := 50
 
-	req, err := http.NewRequest("GET", targetURL, nil)
-	if err != nil {
-		return out, err
-	}
-
-	// temporary. Needs to be an option
-	req.Header.Add("User-Agent", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.100 Safari/537.36")
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return out, err
-	}
-	if resp.Body == nil {
-		return out, err
-	}
-	defer resp.Body.Close()
-
-	// always read the full body so we can re-use the tcp connection
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return out, err
-	}
-
-	// nope (:
-	if strings.HasPrefix(resp.Status, "3") {
-		return out, nil
-	}
-
-	// also nope
-	ct := resp.Header.Get("Content-Type")
-	if ct != "" && !strings.Contains(ct, "html") {
-		return out, nil
-	}
-
-	body := string(b)
-
-	u, err := url.Parse(targetURL)
-	if err != nil {
-		return out, err
-	}
-
-	for key, vv := range u.Query() {
-		for _, v := range vv {
-			if !strings.Contains(body, v) {
-				continue
-			}
-
-			out = append(out, key+ "=" + v)
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		req, err := http.NewRequest("GET", targetURL, nil)
+		if err != nil {
+			return out, err
 		}
+
+		req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.100 Safari/537.36")
+
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return out, err
+		}
+
+		if resp.StatusCode == http.StatusServiceUnavailable && attempt < maxRetries {
+
+			// Sleep for a short duration before retrying
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		if resp.Body == nil {
+			return out, err
+		}
+		defer resp.Body.Close()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return out, err
+		}
+
+		if strings.HasPrefix(resp.Status, "3") || (resp.Header.Get("Content-Type") != "" && !strings.Contains(resp.Header.Get("Content-Type"), "html")) {
+			return out, nil
+		}
+
+		body := string(b)
+
+
+		if strings.Contains(body, "Type the characters you see in this image") {
+			continue
+		}
+
+
+		u, err := url.Parse(targetURL)
+		if err != nil {
+			return out, err
+		}
+
+		for key, vv := range u.Query() {
+			for _, v := range vv {
+				if !strings.Contains(body, v) {
+					continue
+				}
+
+				out = append(out, key+"="+v)
+			}
+		}
+
+		return out, nil
 	}
 
 	return out, nil
 }
+
 
 type workerFunc func(paramCheck, chan paramCheck)
 
