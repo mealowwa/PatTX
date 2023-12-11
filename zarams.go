@@ -25,7 +25,7 @@ func param() string {
 	// fmt.Println(numLines)
 	paramList := []string{}
 	num := 1
-	count := 100
+	count := 50
 
 	for _, par := range parames {
 		if len(par) < 40 {
